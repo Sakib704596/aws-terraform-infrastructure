@@ -1,0 +1,20 @@
+# Terraform files
+.terraform/
+.terraform.lock.hcl
+terraform.tfstate
+terraform.tfstate.backup
+*.tfvars
+
+# SSH Keys - NEVER push these!
+*.pem
+*.pub
+terraform-key
+combined-key
+
+# Logs
+*.log
+deployment.log
+
+# OS files
+.DS_Store
+Thumbs.db
