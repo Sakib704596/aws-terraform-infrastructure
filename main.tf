@@ -1,9 +1,9 @@
 terraform {
   backend "s3" {
-    bucket         = "aws-infra-state-70d8ea83"
-    key            = "dev/terraform.tfstate"
-    region         = "us-east-1"
-    encrypt        = true
+    bucket       = "aws-infra-state-70d8ea83"
+    key          = "dev/terraform.tfstate"
+    region       = "us-east-1"
+    encrypt      = true
     use_lockfile = true
   }
 
@@ -12,11 +12,37 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.0"
     }
+    null = {
+      source  = "hashicorp/null"
+      version = "~> 3.0"
+    }
   }
 }
 
 provider "aws" {
   region = var.aws_region
+}
+
+# Local values for workspace config
+locals {
+  env = terraform.workspace
+
+  config = {
+    default = {
+      instance_count = 1
+      instance_type  = "t3.micro"
+    }
+    dev = {
+      instance_count = 1
+      instance_type  = "t3.micro"
+    }
+    prod = {
+      instance_count = 2
+      instance_type  = "t3.micro"
+    }
+  }
+
+  current = local.config[local.env]
 }
 
 # VPC Module
@@ -25,4 +51,24 @@ module "vpc" {
 
   environment  = var.environment
   project_name = var.project_name
+}
+
+# EC2 Module
+module "ec2" {
+  source = "./modules/ec2"
+
+  environment       = var.environment
+  project_name      = var.project_name
+  instance_type     = local.current.instance_type
+  instance_count    = local.current.instance_count
+  vpc_id            = module.vpc.vpc_id
+  public_subnet_ids = module.vpc.public_subnet_ids
+  key_name          = aws_key_pair.web_key.key_name
+  private_key_path  = "${path.root}/aws-terraform-key.pub"
+}
+
+# Upload public key to AWS
+resource "aws_key_pair" "web_key" {
+  key_name   = "${var.project_name}-${var.environment}-key"
+  public_key = file("${path.module}/aws-terraform-key.pub")
 }
