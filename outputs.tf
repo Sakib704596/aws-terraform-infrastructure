@@ -22,3 +22,13 @@ output "web_server_urls" {
   description = "Web server URLs"
   value       = [for ip in module.ec2.public_ips : "http://${ip}"]
 }
+
+output "db_endpoint" {
+  description = "Database endpoint"
+  value       = module.rds.db_endpoint
+}
+
+output "db_name" {
+  description = "Database name"
+  value       = module.rds.db_name
+}

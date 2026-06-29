@@ -1,6 +1,6 @@
 terraform {
   backend "s3" {
-    bucket       = "aws-infra-state-70d8ea83"
+    bucket       = "my-terraform-state-bucket-b4f62d9e"
     key          = "dev/terraform.tfstate"
     region       = "us-east-1"
     encrypt      = true
@@ -23,7 +23,6 @@ provider "aws" {
   region = var.aws_region
 }
 
-# Local values for workspace config
 locals {
   env = terraform.workspace
 
@@ -31,14 +30,17 @@ locals {
     default = {
       instance_count = 1
       instance_type  = "t3.micro"
+      db_class       = "db.t3.micro"
     }
     dev = {
       instance_count = 1
       instance_type  = "t3.micro"
+      db_class       = "db.t3.micro"
     }
     prod = {
       instance_count = 2
       instance_type  = "t3.micro"
+      db_class       = "db.t3.micro"
     }
   }
 
@@ -64,10 +66,23 @@ module "ec2" {
   vpc_id            = module.vpc.vpc_id
   public_subnet_ids = module.vpc.public_subnet_ids
   key_name          = aws_key_pair.web_key.key_name
-  private_key_path  = "${path.root}/aws-terraform-key.pub"
+  private_key_path  = "${path.root}/aws-terraform-key"
 }
 
-# Upload public key to AWS
+# RDS Module
+module "rds" {
+  source = "./modules/rds"
+
+  environment           = var.environment
+  project_name          = var.project_name
+  vpc_id                = module.vpc.vpc_id
+  private_subnet_ids    = module.vpc.private_subnet_ids
+  ec2_security_group_id = module.ec2.security_group_id
+  db_name               = "appdb"
+  instance_class        = local.current.db_class
+}
+
+# SSH Key Pair
 resource "aws_key_pair" "web_key" {
   key_name   = "${var.project_name}-${var.environment}-key"
   public_key = file("${path.module}/aws-terraform-key.pub")

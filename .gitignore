@@ -7,7 +7,8 @@ terraform.tfstate.backup
 
 # SSH Keys - NEVER push these!
 *.pem
-*.pub
+aws-terraform-key
+aws-terraform-key.pub
 terraform-key
 combined-key
 
