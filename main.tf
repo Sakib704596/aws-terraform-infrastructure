@@ -81,7 +81,17 @@ module "rds" {
   db_name               = "appdb"
   instance_class        = local.current.db_class
 }
+# ALB Module
+module "alb" {
+  source = "./modules/alb"
 
+  environment           = var.environment
+  project_name          = var.project_name
+  vpc_id                = module.vpc.vpc_id
+  public_subnet_ids     = module.vpc.public_subnet_ids
+  ec2_instance_ids      = module.ec2.instance_ids
+  ec2_security_group_id = module.ec2.security_group_id
+}
 # SSH Key Pair
 resource "aws_key_pair" "web_key" {
   key_name   = "${var.project_name}-${var.environment}-key"

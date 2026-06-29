@@ -32,3 +32,12 @@ output "db_name" {
   description = "Database name"
   value       = module.rds.db_name
 }
+output "alb_dns_name" {
+  description = "ALB DNS name - use this to access app!"
+  value       = module.alb.alb_dns_name
+}
+
+output "alb_url" {
+  description = "ALB URL"
+  value       = "http://${module.alb.alb_dns_name}"
+}
