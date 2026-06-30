@@ -53,7 +53,7 @@ resource "aws_security_group" "ec2_sg" {
   }
 }
 
-# EC2 Instances
+# EC2 Instance
 resource "aws_instance" "web" {
   count                  = var.instance_count
   ami                    = data.aws_ami.amazon_linux.id
@@ -62,49 +62,33 @@ resource "aws_instance" "web" {
   key_name               = var.key_name
   vpc_security_group_ids = [aws_security_group.ec2_sg.id]
 
+  # user_data runs automatically on first boot
+  # Installs nginx without needing SSH!
+  user_data = <<-EOF
+              #!/bin/bash
+              yum update -y
+              amazon-linux-extras install nginx1 -y
+              cat > /etc/nginx/conf.d/default.conf << 'NGINXCONF'
+              server {
+                  listen 80;
+                  server_name _;
+                  location / {
+                      return 200 'Hello from AWS Terraform Infrastructure!';
+                      add_header Content-Type text/plain;
+                  }
+                  location /health {
+                      return 200 'healthy';
+                      add_header Content-Type text/plain;
+                  }
+              }
+              NGINXCONF
+              systemctl start nginx
+              systemctl enable nginx
+              EOF
+
   tags = {
     Name        = "${var.project_name}-${var.environment}-web-${count.index + 1}"
     Environment = var.environment
     Project     = var.project_name
-  }
-}
-
-# Null resource for provisioners
-resource "null_resource" "web_provisioner" {
-  count = var.instance_count
-
-  triggers = {
-    instance_id = aws_instance.web[count.index].id
-  }
-
-  connection {
-    type        = "ssh"
-    user        = "ec2-user"
-    private_key = file(var.private_key_path)
-    host        = aws_instance.web[count.index].public_ip
-    timeout     = "5m"
-  }
-
-  # Copy nginx config
-  provisioner "file" {
-    source      = "configs/app.conf"
-    destination = "/tmp/app.conf"
-  }
-
-  # Install nginx
-  provisioner "remote-exec" {
-    inline = [
-      "sudo yum update -y",
-      "sudo amazon-linux-extras install nginx1 -y",
-      "sudo mv /tmp/app.conf /etc/nginx/conf.d/default.conf",
-      "sudo systemctl start nginx",
-      "sudo systemctl enable nginx",
-      "echo 'Nginx setup complete!'"
-    ]
-  }
-
-  # Log locally
-  provisioner "local-exec" {
-    command = "echo 'Server ${count.index + 1} ready at http://${aws_instance.web[count.index].public_ip}' >> deployment.log"
   }
 }

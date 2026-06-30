@@ -5,11 +5,7 @@ terraform {
     aws = {
       source  = "hashicorp/aws"
       version = "~> 5.0"
-    }
-    null = {
-      source  = "hashicorp/null"
-      version = "~> 3.0"
-    }
+    } 
   }
 }
 
@@ -60,7 +56,7 @@ module "ec2" {
   vpc_id            = module.vpc.vpc_id
   public_subnet_ids = module.vpc.public_subnet_ids
   key_name          = aws_key_pair.web_key.key_name
-  private_key_path  = "${path.root}/aws-terraform-key"
+ # private_key_path  = "${path.root}/aws-terraform-key"
 }
 
 # RDS Module

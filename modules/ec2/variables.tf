@@ -34,8 +34,3 @@ variable "key_name" {
   description = "SSH key pair name"
   type        = string
 }
-
-variable "private_key_path" {
-  description = "Path to private key"
-  type        = string
-}
