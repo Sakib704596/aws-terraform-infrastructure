@@ -1,12 +1,5 @@
 terraform {
-  backend "s3" {
-    bucket  = "YOUR-BUCKET-NAME"
-    key     = "dev/terraform.tfstate"
-    region  = "us-east-1"
-    encrypt = true
-    # Removed use_lockfile!
-    # Removed dynamodb_table!
-  }
+  backend "s3" {}
 
   required_providers {
     aws = {
