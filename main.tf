@@ -1,5 +1,11 @@
 terraform {
-  backend "s3" {}
+  backend "s3" {
+    bucket  = "aws-infra-state-70d8ea83"
+    key     = "dev/terraform.tfstate"
+    region  = "us-east-1"
+    encrypt = true
+
+  }
 
   required_providers {
     aws = {
