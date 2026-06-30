@@ -19,3 +19,8 @@ variable "ssh_public_key" {
   description = "SSH public key content"
   type        = string
 }
+variable "alert_email" {
+  description = "Email for CloudWatch alerts"
+  type        = string
+  default     = "khsakib2005@gmail.com"
+}

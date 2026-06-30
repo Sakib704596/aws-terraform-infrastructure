@@ -88,6 +88,19 @@ module "alb" {
   ec2_instance_ids      = module.ec2.instance_ids
   ec2_security_group_id = module.ec2.security_group_id
 }
+
+# CloudWatch Monitoring Module
+module "cloudwatch" {
+  source = "./modules/cloudwatch"
+
+  environment      = var.environment
+  project_name     = var.project_name
+  ec2_instance_ids = module.ec2.instance_ids
+  rds_instance_id  = "${var.project_name}-${var.environment}-db"
+  alb_arn_suffix   = module.alb.alb_arn_suffix
+  alert_email      = var.alert_email
+  cpu_threshold    = 80
+}
 # SSH Key Pair
 resource "aws_key_pair" "web_key" {
   key_name   = "${var.project_name}-${var.environment}-key"

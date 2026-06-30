@@ -41,3 +41,13 @@ output "alb_url" {
   description = "ALB URL"
   value       = "http://${module.alb.alb_dns_name}"
 }
+
+output "cloudwatch_dashboard_url" {
+  description = "CloudWatch dashboard URL"
+  value       = module.cloudwatch.dashboard_url
+}
+
+output "sns_topic_arn" {
+  description = "SNS alerts topic ARN"
+  value       = module.cloudwatch.sns_topic_arn
+}
