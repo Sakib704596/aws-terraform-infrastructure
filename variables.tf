@@ -15,3 +15,7 @@ variable "project_name" {
   type        = string
   default     = "aws-terraform"
 }
+variable "ssh_public_key" {
+  description = "SSH public key content"
+  type        = string
+}

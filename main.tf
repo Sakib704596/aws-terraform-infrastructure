@@ -85,5 +85,5 @@ module "alb" {
 # SSH Key Pair
 resource "aws_key_pair" "web_key" {
   key_name   = "${var.project_name}-${var.environment}-key"
-  public_key = file("${path.module}/aws-terraform-key.pub")
+  public_key = var.ssh_public_key
 }
