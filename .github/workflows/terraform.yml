@@ -1,15 +1,13 @@
 name: Terraform CI/CD
 
-# When to run this pipeline
 on:
   push:
     branches:
-      - main        # Run on push to main
+      - main
   pull_request:
     branches:
-      - main        # Run on pull request to main
+      - main
 
-# Environment variables
 env:
   AWS_REGION: us-east-1
   TF_VERSION: 1.5.0
@@ -17,20 +15,17 @@ env:
 jobs:
   terraform:
     name: Terraform
-    runs-on: ubuntu-latest   # Runs on GitHub's servers
+    runs-on: ubuntu-latest
 
     steps:
-      # Step 1 - Checkout code
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # Step 2 - Setup Terraform
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: ${{ env.TF_VERSION }}
 
-      # Step 3 - Configure AWS credentials
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -38,38 +33,26 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-        # Save SSH key for provisioners
       - name: Setup SSH Key
         run: |
-          mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > aws-terraform-key
           chmod 600 aws-terraform-key
-          cp aws-terraform-key $GITHUB_WORKSPACE/aws-terraform-key
 
-      # Step 4 - Terraform Init
       - name: Terraform Init
         run: terraform init
-        env:
-          TF_VAR_bucket: ${{ secrets.TF_STATE_BUCKET }}
 
-      # Step 5 - Terraform Format Check
       - name: Terraform Format
         run: terraform fmt -check
         continue-on-error: true
 
-      # Step 6 - Terraform Validate
       - name: Terraform Validate
         run: terraform validate
 
-      # Step 7 - Terraform Plan
-      # Runs on EVERY push and pull request
       - name: Terraform Plan
         run: terraform plan
         env:
           TF_VAR_environment: dev
 
-      # Step 8 - Terraform Apply
-      # Only runs when pushing to main branch
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: terraform apply -auto-approve
